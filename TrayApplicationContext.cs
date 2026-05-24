@@ -11,17 +11,18 @@ namespace WindowMinimizer
 
         private readonly NotifyIcon _trayIcon;
 
-        // Storing the HookId as static variables ensures it is pinned
+        // Storing the HookId and proc as static variables ensures they are pinned
         // in memory and never collected by the Garbage Collector.
         private static IntPtr _hookId = IntPtr.Zero;
+        private static NativeMethods.LowLevelKeyboardProc _proc = null!;
 
         public TrayApplicationContext()
         {
-            // 1. Setup Context Menu
+            // Setup Context Menu
             var contextMenu = new ContextMenuStrip();
             contextMenu.Items.Add("Exit", null, Exit_Click);
 
-            // 2. Setup System Tray Icon
+            // Setup System Tray Icon
             _trayIcon = new NotifyIcon
             {
                 Icon = CreateTrayIcon(),
@@ -30,10 +31,9 @@ namespace WindowMinimizer
                 Text = $"Window Minimizer (Listening for {TriggerKey})"
             };
 
-            // 3. Register Global Keyboard Hook
-            // We maintain a reference to the delegate (_proc) to prevent garbage collection
-            NativeMethods.LowLevelKeyboardProc proc = HookCallback;
-            _hookId = SetHook(proc);
+            // Register Global Keyboard Hook
+            _proc = HookCallback;
+            _hookId = SetHook(_proc);
         }
 
         // Generates a simple 16x16 icon (Blue background with a white minus sign)
