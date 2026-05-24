@@ -6,11 +6,14 @@ namespace WindowMinimizer
     // Manages the system tray icon, lifecycle, and the global keyboard hook.
     public class TrayApplicationContext : ApplicationContext
     {
-        // Key assigned in G-hub
-        private const Keys TriggerKey = Keys.F24;
+        // Key assigned in G-Hub.
+        private static readonly Keys TriggerKey = Keys.F24;
 
         private readonly NotifyIcon _trayIcon;
-        private readonly IntPtr _hookId;
+
+        // Storing the HookId as static variables ensures it is pinned
+        // in memory and never collected by the Garbage Collector.
+        private static IntPtr _hookId = IntPtr.Zero;
 
         public TrayApplicationContext()
         {
@@ -48,7 +51,7 @@ namespace WindowMinimizer
         }
 
         // Initializes the low-level keyboard hook into the Windows API.
-        private IntPtr SetHook(NativeMethods.LowLevelKeyboardProc proc)
+        private static IntPtr SetHook(NativeMethods.LowLevelKeyboardProc proc)
         {
             using Process curProcess = Process.GetCurrentProcess();
             using ProcessModule curModule = curProcess.MainModule!;
@@ -57,23 +60,30 @@ namespace WindowMinimizer
         }
 
         // The callback function that Windows invokes when a key is pressed.
-        private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            // Process WM_KEYDOWN events
-            if (nCode >= 0 && wParam == (IntPtr)NativeMethods.WM_KEYDOWN)
+            try
             {
-                // Cast the memory address directly to the .NET Keys enum
-                Keys pressedKey = (Keys)Marshal.ReadInt32(lParam);
-
-                if (pressedKey == TriggerKey)
+                // Process WM_KEYDOWN events
+                if (nCode >= 0 && wParam == (IntPtr)NativeMethods.WM_KEYDOWN)
                 {
-                    // Find the currently active window and minimize it
-                    IntPtr handle = NativeMethods.GetForegroundWindow();
-                    if (handle != IntPtr.Zero)
+                    // Cast the memory address directly to the .NET Keys enum
+                    Keys pressedKey = (Keys)Marshal.ReadInt32(lParam);
+
+                    if (pressedKey == TriggerKey)
                     {
-                        NativeMethods.ShowWindow(handle, NativeMethods.SW_MINIMIZE);
+                        // Find the currently active window and minimize it
+                        IntPtr handle = NativeMethods.GetForegroundWindow();
+                        if (handle != IntPtr.Zero)
+                        {
+                            NativeMethods.ShowWindow(handle, NativeMethods.SW_MINIMIZE);
+                        }
                     }
                 }
+            }
+            catch
+            {
+                // Ignore exceptions to prevent crashing the hook chain
             }
 
             // Always pass the event to the next hook in the chain to not break other software

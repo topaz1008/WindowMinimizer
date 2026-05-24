@@ -33,4 +33,4 @@ dotnet publish -c Release -r win-x64 /p:PublishSingleFile=true --self-contained 
 
 Write-Host "`nBuild Complete!" -ForegroundColor Green
 Write-Host "Your executable is located at:" -ForegroundColor White
-Write-Host "$PWD\bin\Release\net8.0-windows\win-x64\publish\WindowMinimizerTray.exe" -ForegroundColor Green
+Write-Host "$PWD\bin\Release\net8.0-windows\win-x64\publish\WindowMinimizer.exe" -ForegroundColor Green
