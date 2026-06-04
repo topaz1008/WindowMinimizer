@@ -17,7 +17,6 @@ namespace WindowMinimizer
 
         public TrayApplicationContext()
         {
-            // Load preferred key from registry
             _triggerKey = SettingsManager.GetTriggerKey();
 
             _contextMenu = new ContextMenuStrip();
@@ -33,27 +32,23 @@ namespace WindowMinimizer
                 Text = $"Window Minimizer (Listening for {_triggerKey})"
             };
 
-            // Double click tray icon to open settings
             _trayIcon.DoubleClick += Settings_Click;
 
             _proc = HookCallback;
             _hookId = SetHook(_proc);
+
+            if (SettingsManager.IsFirstRun())
+                _trayIcon.ShowBalloonTip(4000, "Window Minimizer",
+                    $"Running in the background. Press {_triggerKey} to minimize the active window.", ToolTipIcon.Info);
         }
 
-        /// <summary>
-        /// Called by the OptionsForm when the user saves a new keybind.
-        /// </summary>
+        // Called by OptionsForm after the user saves — updates the hook without a restart.
         public void ApplyNewKeybind(Keys newKey)
         {
             _triggerKey = newKey;
             _trayIcon.Text = $"Window Minimizer (Listening for {_triggerKey})";
         }
 
-        /// <summary>
-        /// Opens the settings form.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void Settings_Click(object? sender, EventArgs e)
         {
             // Prevent multiple settings windows from opening simultaneously
@@ -67,10 +62,6 @@ namespace WindowMinimizer
             }
         }
 
-        /// <summary>
-        /// Creates the application's tray icon
-        /// </summary>
-        /// <returns>The icon</returns>
         private static Icon CreateTrayIcon()
         {
             using Bitmap bmp = new Bitmap(16, 16);
@@ -83,11 +74,6 @@ namespace WindowMinimizer
             return Icon.FromHandle(bmp.GetHicon());
         }
 
-        /// <summary>
-        /// Sets the hook globally.
-        /// </summary>
-        /// <param name="proc"></param>
-        /// <returns></returns>
         private static IntPtr SetHook(NativeMethods.LowLevelKeyboardProc proc)
         {
             using Process curProcess = Process.GetCurrentProcess();
@@ -97,13 +83,6 @@ namespace WindowMinimizer
                 NativeMethods.GetModuleHandle(curModule.ModuleName), 0);
         }
 
-        /// <summary>
-        /// Hook callback.
-        /// </summary>
-        /// <param name="nCode"></param>
-        /// <param name="wParam"></param>
-        /// <param name="lParam"></param>
-        /// <returns></returns>
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             try
@@ -117,7 +96,7 @@ namespace WindowMinimizer
                         int vkCode = Marshal.ReadInt32(lParam);
                         Keys pressedKey = (Keys)vkCode;
 
-                        if (pressedKey == _triggerKey) // Checks against dynamically loaded key
+                        if (pressedKey == _triggerKey)
                         {
                             IntPtr handle = NativeMethods.GetForegroundWindow();
                             if (handle != IntPtr.Zero)
@@ -136,11 +115,6 @@ namespace WindowMinimizer
             return NativeMethods.CallNextHookEx(_hookId, nCode, wParam, lParam);
         }
 
-        /// <summary>
-        /// Exit the application.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void Exit_Click(object? sender, EventArgs e)
         {
             _trayIcon.Visible = false;

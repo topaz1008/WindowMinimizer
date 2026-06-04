@@ -11,6 +11,7 @@ namespace WindowMinimizer
     {
         private const string AppRegistryKey = @"Software\WindowMinimizer";
         private const string RunRegistryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+        private const string FirstRun = "FirstRun";
         private const string AppName = "WindowMinimizer";
 
         public static Keys GetTriggerKey()
@@ -37,6 +38,17 @@ namespace WindowMinimizer
             using var key = Registry.CurrentUser.OpenSubKey(RunRegistryKey);
 
             return key?.GetValue(AppName) != null;
+        }
+
+        public static bool IsFirstRun()
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryKey);
+            if (key.GetValue(FirstRun) != null)
+                return false;
+
+            key.SetValue(FirstRun, 1);
+
+            return true;
         }
 
         public static void SetRunAtStartup(bool run)

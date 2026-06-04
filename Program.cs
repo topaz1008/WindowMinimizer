@@ -2,7 +2,6 @@ namespace WindowMinimizer
 {
     internal static class Program
     {
-        // The main entry point for the application.
         [STAThread]
         private static void Main()
         {
@@ -14,7 +13,7 @@ namespace WindowMinimizer
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            // Launch the application without a visible form by passing our custom ApplicationContext
+            // No visible form — the tray icon is the entire UI
             Application.Run(new TrayApplicationContext());
         }
     }
