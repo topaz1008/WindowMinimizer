@@ -6,6 +6,11 @@ namespace WindowMinimizer
         [STAThread]
         private static void Main()
         {
+            // Ensure only one instance is running
+            using var mutex = new Mutex(true, "Global\\WindowMinimizer", out bool createdNew);
+            if (!createdNew)
+                return;
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
