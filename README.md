@@ -14,6 +14,11 @@ This project was built as a workaround for Logitech G-HUB, which removed the nat
 * **Single Executable:** Compiles to a completely standalone `.exe` file with no external dependencies.
 
 ---
+## Screenshots
+
+![main.png](assets/main.png)
+
+---
 
 ## How to Build
 A PowerShell build script is included. It automatically generates the application icon and compiles the project using the .NET 8 SDK.
