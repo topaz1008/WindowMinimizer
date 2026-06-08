@@ -14,6 +14,10 @@ This project was built as a workaround for Logitech G-HUB, which removed the nat
 * **Single Executable:** Compiles to a completely standalone `.exe` file with no external dependencies.
 
 ---
+## Download
+Download the built exe from the [releases](https://github.com/topaz1008/WindowMinimizer/releases) page.
+
+---
 ## Screenshots
 
 ![main.png](assets/main.png)
